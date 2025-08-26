@@ -1,7 +1,7 @@
 package com.amadeus.api.service;
 
-import com.amadeus.api.dto.LoginRequest;
-import com.amadeus.api.dto.LoginResponse;
+import com.amadeus.api.dto.request.LoginRequest;
+import com.amadeus.api.dto.response.LoginResponse;
 
 public interface AuthService {
     

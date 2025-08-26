@@ -1,7 +1,7 @@
 package com.amadeus.api.service.impl;
 
-import com.amadeus.api.dto.LoginRequest;
-import com.amadeus.api.dto.LoginResponse;
+import com.amadeus.api.dto.request.LoginRequest;
+import com.amadeus.api.dto.response.LoginResponse;
 import com.amadeus.api.entity.User;
 import com.amadeus.api.exception.AuthenticationException;
 import com.amadeus.api.repository.UserRepository;

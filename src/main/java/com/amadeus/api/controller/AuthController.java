@@ -1,8 +1,8 @@
 package com.amadeus.api.controller;
 
 import com.amadeus.api.dto.ApiResponse;
-import com.amadeus.api.dto.LoginRequest;
-import com.amadeus.api.dto.LoginResponse;
+import com.amadeus.api.dto.request.LoginRequest;
+import com.amadeus.api.dto.response.LoginResponse;
 import com.amadeus.api.service.AuthService;
 import com.amadeus.api.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;

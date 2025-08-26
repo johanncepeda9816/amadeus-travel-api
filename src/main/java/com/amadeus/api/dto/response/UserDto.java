@@ -1,4 +1,4 @@
-package com.amadeus.api.dto;
+package com.amadeus.api.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
