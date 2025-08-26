@@ -10,9 +10,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class JwtAuthenticationInterceptor implements HandlerInterceptor {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final SecurityProperties securityProperties;
 
-    public JwtAuthenticationInterceptor(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationInterceptor(JwtTokenProvider jwtTokenProvider, SecurityProperties securityProperties) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.securityProperties = securityProperties;
     }
 
     @Override
@@ -38,10 +40,14 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
     }
 
     private boolean isPublicEndpoint(String requestURI) {
-        return requestURI.startsWith("/api/auth/login") ||
-               requestURI.startsWith("/api/auth/register") ||
-               requestURI.startsWith("/h2-console") ||
-               requestURI.startsWith("/actuator");
+        return securityProperties.getPublicEndpoints().stream()
+                .anyMatch(endpoint -> {
+                    if (endpoint.endsWith("/**")) {
+                        String basePath = endpoint.substring(0, endpoint.length() - 2);
+                        return requestURI.startsWith(basePath);
+                    }
+                    return requestURI.equals(endpoint);
+                });
     }
 
 

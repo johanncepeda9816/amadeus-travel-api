@@ -9,15 +9,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final JwtAuthenticationInterceptor jwtAuthenticationInterceptor;
+    private final SecurityProperties securityProperties;
 
-    public WebConfig(JwtAuthenticationInterceptor jwtAuthenticationInterceptor) {
+    public WebConfig(JwtAuthenticationInterceptor jwtAuthenticationInterceptor, SecurityProperties securityProperties) {
         this.jwtAuthenticationInterceptor = jwtAuthenticationInterceptor;
+        this.securityProperties = securityProperties;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtAuthenticationInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/auth/login", "/api/auth/register");
+                .excludePathPatterns(securityProperties.getPublicEndpoints().toArray(new String[0]));
     }
 }

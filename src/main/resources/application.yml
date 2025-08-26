@@ -58,6 +58,19 @@ cors:
   allow-credentials: true
   max-age: 3600
 
+security:
+  public-endpoints:
+    - /auth/login
+    - /auth/register
+    - /h2-console/**
+    - /actuator/**
+  admin-endpoints:
+    - /admin/**
+    - /users/**
+  user-endpoints:
+    - /travel/**
+    - /bookings/**
+
 ---
 spring:
   config:
