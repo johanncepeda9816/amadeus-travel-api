@@ -37,8 +37,4 @@ public class FlightSearchRequest {
     @Max(value = 9, message = "Maximum 9 passengers allowed")
     private Integer passengers;
 
-    @NotNull(message = "Number of rooms is required")
-    @Min(value = 1, message = "Minimum 1 room required")
-    @Max(value = 5, message = "Maximum 5 rooms allowed")
-    private Integer rooms;
 }

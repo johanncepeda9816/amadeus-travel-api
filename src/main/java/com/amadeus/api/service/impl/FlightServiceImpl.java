@@ -111,10 +111,14 @@ public class FlightServiceImpl implements FlightService {
 	}
 
 	private List<FlightDto> searchFlightsFromDatabase(FlightSearchRequest request) {
+		LocalDateTime startOfDay = request.getDepartureDate().atStartOfDay();
+		LocalDateTime nextDay = startOfDay.plusDays(1);
+
 		List<Flight> flights = flightRepository.findAvailableFlights(
 				request.getOrigin().toUpperCase(),
 				request.getDestination().toUpperCase(),
-				request.getDepartureDate());
+				startOfDay,
+				nextDay);
 
 		if (flights.isEmpty()) {
 			log.info("No flights found in database for date: {}", request.getDepartureDate());
@@ -128,10 +132,14 @@ public class FlightServiceImpl implements FlightService {
 	}
 
 	private List<FlightDto> searchReturnFlightsFromDatabase(FlightSearchRequest request) {
+		LocalDateTime startOfDay = request.getReturnDate().atStartOfDay();
+		LocalDateTime nextDay = startOfDay.plusDays(1);
+
 		List<Flight> flights = flightRepository.findAvailableFlights(
 				request.getDestination().toUpperCase(),
 				request.getOrigin().toUpperCase(),
-				request.getReturnDate());
+				startOfDay,
+				nextDay);
 
 		if (flights.isEmpty()) {
 			log.info("No return flights found in database for date: {}", request.getReturnDate());
