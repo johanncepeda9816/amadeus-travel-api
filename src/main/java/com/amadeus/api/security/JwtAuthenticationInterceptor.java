@@ -1,5 +1,6 @@
 package com.amadeus.api.security;
 
+import com.amadeus.api.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String token = extractTokenFromRequest(request);
+        String token = JwtUtil.extractTokenFromRequestOrNull(request);
         
         if (token == null || !jwtTokenProvider.validateToken(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -43,11 +44,5 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
                requestURI.startsWith("/actuator");
     }
 
-    private String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
+
 }
