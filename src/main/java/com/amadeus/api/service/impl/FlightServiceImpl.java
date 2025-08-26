@@ -4,6 +4,8 @@ import com.amadeus.api.dto.request.FlightSearchRequest;
 import com.amadeus.api.dto.response.FlightDto;
 import com.amadeus.api.dto.response.FlightSearchResponse;
 import com.amadeus.api.dto.response.SearchMetadata;
+import com.amadeus.api.entity.Flight;
+import com.amadeus.api.repository.FlightRepository;
 import com.amadeus.api.service.FlightService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,22 +17,34 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FlightServiceImpl implements FlightService {
 
+	private final FlightRepository flightRepository;
+
 	@Override
 	public FlightSearchResponse searchFlights(FlightSearchRequest request) {
 		log.info("Searching flights from {} to {} on {}",
 				request.getOrigin(), request.getDestination(), request.getDepartureDate());
 
-		List<FlightDto> outboundFlights = generateOutboundFlights(request);
+		List<FlightDto> outboundFlights = searchFlightsFromDatabase(request);
 		List<FlightDto> returnFlights = new ArrayList<>();
 
 		if ("roundtrip".equals(request.getTripType()) && request.getReturnDate() != null) {
-			returnFlights = generateReturnFlights(request);
+			returnFlights = searchReturnFlightsFromDatabase(request);
+		}
+
+		// If no flights found in database, generate mock data
+		if (outboundFlights.isEmpty() && returnFlights.isEmpty()) {
+			log.info("No flights found in database, generating mock data");
+			outboundFlights = generateOutboundFlights(request);
+			if ("roundtrip".equals(request.getTripType()) && request.getReturnDate() != null) {
+				returnFlights = generateReturnFlights(request);
+			}
 		}
 
 		int totalResults = outboundFlights.size() + returnFlights.size();
@@ -94,6 +108,56 @@ public class FlightServiceImpl implements FlightService {
 				returnDate.with(LocalTime.of(15, 45)), "1h 35m", new BigDecimal("430000")));
 
 		return flights;
+	}
+
+	private List<FlightDto> searchFlightsFromDatabase(FlightSearchRequest request) {
+		List<Flight> flights = flightRepository.findAvailableFlights(
+				request.getOrigin().toUpperCase(),
+				request.getDestination().toUpperCase(),
+				request.getDepartureDate());
+
+		if (flights.isEmpty()) {
+			log.info("No flights found in database for date: {}", request.getDepartureDate());
+			return new ArrayList<>();
+		}
+
+		log.info("Found {} flights in database", flights.size());
+		return flights.stream()
+				.map(this::convertToFlightDto)
+				.collect(Collectors.toList());
+	}
+
+	private List<FlightDto> searchReturnFlightsFromDatabase(FlightSearchRequest request) {
+		List<Flight> flights = flightRepository.findAvailableFlights(
+				request.getDestination().toUpperCase(),
+				request.getOrigin().toUpperCase(),
+				request.getReturnDate());
+
+		if (flights.isEmpty()) {
+			log.info("No return flights found in database for date: {}", request.getReturnDate());
+			return new ArrayList<>();
+		}
+
+		log.info("Found {} return flights in database", flights.size());
+		return flights.stream()
+				.map(this::convertToFlightDto)
+				.collect(Collectors.toList());
+	}
+
+	private FlightDto convertToFlightDto(Flight flight) {
+		return FlightDto.builder()
+				.flightNumber(flight.getFlightNumber())
+				.airline(flight.getAirline())
+				.origin(flight.getOrigin())
+				.destination(flight.getDestination())
+				.departureTime(flight.getDepartureTime())
+				.arrivalTime(flight.getArrivalTime())
+				.duration(flight.getDuration())
+				.price(flight.getPrice())
+				.aircraftType(flight.getAircraftType())
+				.availableSeats(flight.getAvailableSeats())
+				.cabinClass(flight.getCabinClass())
+				.build();
 	}
 
 	private FlightDto createFlight(String flightNumber, String airline, String origin, String destination,

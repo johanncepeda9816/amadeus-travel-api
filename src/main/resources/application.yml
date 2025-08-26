@@ -64,6 +64,7 @@ security:
     - /auth/register
     - /h2-console/**
     - /actuator/**
+    - /flights/search
   admin-endpoints:
     - /admin/**
     - /users/**
