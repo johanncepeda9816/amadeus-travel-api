@@ -5,8 +5,11 @@ import com.amadeus.api.dto.request.FlightSearchRequest;
 import com.amadeus.api.dto.request.UpdateFlightRequest;
 import com.amadeus.api.dto.response.FlightAdminDto;
 import com.amadeus.api.dto.response.FlightSearchResponse;
+import com.amadeus.api.dto.response.LocationDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface FlightService {
 
@@ -21,4 +24,10 @@ public interface FlightService {
     FlightAdminDto updateFlight(Long id, UpdateFlightRequest request);
 
     void deleteFlight(Long id);
+
+    List<LocationDto> getAvailableOrigins();
+
+    List<LocationDto> getAvailableDestinations();
+
+    List<LocationDto> getAvailableLocations();
 }

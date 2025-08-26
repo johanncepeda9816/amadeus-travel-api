@@ -37,4 +37,16 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
         List<Flight> findByOriginAndDestinationAndActiveTrue(String origin, String destination);
 
         boolean existsByFlightNumberAndDepartureTime(String flightNumber, LocalDateTime departureTime);
+
+        @Query("SELECT DISTINCT f.origin FROM Flight f WHERE f.active = true ORDER BY f.origin")
+        List<String> findDistinctOrigins();
+
+        @Query("SELECT DISTINCT f.destination FROM Flight f WHERE f.active = true ORDER BY f.destination")
+        List<String> findDistinctDestinations();
+
+        @Query("SELECT DISTINCT f.origin FROM Flight f WHERE f.active = true " +
+                        "UNION " +
+                        "SELECT DISTINCT f.destination FROM Flight f WHERE f.active = true " +
+                        "ORDER BY 1")
+        List<String> findDistinctLocations();
 }

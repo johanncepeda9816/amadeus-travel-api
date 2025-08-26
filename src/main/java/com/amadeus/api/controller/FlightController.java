@@ -6,6 +6,7 @@ import com.amadeus.api.dto.request.FlightSearchRequest;
 import com.amadeus.api.dto.request.UpdateFlightRequest;
 import com.amadeus.api.dto.response.FlightAdminDto;
 import com.amadeus.api.dto.response.FlightSearchResponse;
+import com.amadeus.api.dto.response.LocationDto;
 import com.amadeus.api.service.FlightService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -96,5 +99,26 @@ public class FlightController {
         log.info("Deleting flight with id: {}", id);
         flightService.deleteFlight(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Flight deleted successfully"));
+    }
+
+    @GetMapping("/locations/origins")
+    public ResponseEntity<ApiResponse<List<LocationDto>>> getAvailableOrigins() {
+
+        List<LocationDto> origins = flightService.getAvailableOrigins();
+        return ResponseEntity.ok(ApiResponse.success(origins, "Available origins retrieved successfully"));
+    }
+
+    @GetMapping("/locations/destinations")
+    public ResponseEntity<ApiResponse<List<LocationDto>>> getAvailableDestinations() {
+
+        List<LocationDto> destinations = flightService.getAvailableDestinations();
+        return ResponseEntity.ok(ApiResponse.success(destinations, "Available destinations retrieved successfully"));
+    }
+
+    @GetMapping("/locations")
+    public ResponseEntity<ApiResponse<List<LocationDto>>> getAvailableLocations() {
+
+        List<LocationDto> locations = flightService.getAvailableLocations();
+        return ResponseEntity.ok(ApiResponse.success(locations, "Available locations retrieved successfully"));
     }
 }

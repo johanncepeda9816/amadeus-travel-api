@@ -5,6 +5,7 @@ import com.amadeus.api.entity.User;
 import com.amadeus.api.entity.UserRole;
 import com.amadeus.api.repository.FlightRepository;
 import com.amadeus.api.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -14,151 +15,250 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.*;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
-    private final UserRepository userRepository;
-    private final FlightRepository flightRepository;
-    private final PasswordEncoder passwordEncoder;
+        private final UserRepository userRepository;
+        private final FlightRepository flightRepository;
+        private final PasswordEncoder passwordEncoder;
 
-    @Override
-    public void run(String... args) throws Exception {
-        seedUsers();
-        seedFlights();
-    }
-
-    private void seedUsers() {
-        if (userRepository.count() > 0) {
-            log.info("Database already has users, skipping seeding");
-            return;
+        @Override
+        public void run(String... args) throws Exception {
+                seedUsers();
+                seedFlights();
         }
 
-        log.info("Seeding users...");
+        private void seedUsers() {
+                if (userRepository.count() > 0) {
+                        log.info("Database already has users, skipping seeding");
+                        return;
+                }
 
-        User adminUser = User.builder()
-                .email("admin@amadeus.com")
-                .password(passwordEncoder.encode("password123"))
-                .name("Admin User")
-                .role(UserRole.ADMIN)
-                .enabled(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+                log.info("Seeding users...");
 
-        User regularUser = User.builder()
-                .email("user@amadeus.com")
-                .password(passwordEncoder.encode("password123"))
-                .name("Regular User")
-                .role(UserRole.USER)
-                .enabled(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+                User adminUser = User.builder()
+                                .email("admin@amadeus.com")
+                                .password(passwordEncoder.encode("password123"))
+                                .name("Admin User")
+                                .role(UserRole.ADMIN)
+                                .enabled(true)
+                                .createdAt(LocalDateTime.now())
+                                .updatedAt(LocalDateTime.now())
+                                .build();
 
-        userRepository.save(adminUser);
-        userRepository.save(regularUser);
+                User regularUser = User.builder()
+                                .email("user@amadeus.com")
+                                .password(passwordEncoder.encode("password123"))
+                                .name("Regular User")
+                                .role(UserRole.USER)
+                                .enabled(true)
+                                .createdAt(LocalDateTime.now())
+                                .updatedAt(LocalDateTime.now())
+                                .build();
 
-        log.info("Users seeded successfully:");
-        log.info("Admin: admin@amadeus.com / password123");
-        log.info("User: user@amadeus.com / password123");
-    }
+                userRepository.save(adminUser);
+                userRepository.save(regularUser);
 
-    private void seedFlights() {
-        if (flightRepository.count() > 0) {
-            log.info("Database already has flights, skipping seeding");
-            return;
+                log.info("Users seeded successfully:");
+                log.info("Admin: admin@amadeus.com / password123");
+                log.info("User: user@amadeus.com / password123");
         }
 
-        log.info("Seeding flights...");
+        private void seedFlights() {
+                if (flightRepository.count() > 0) {
+                        log.info("Database already has flights, skipping seeding");
+                        return;
+                }
 
-        // Vuelos de BOG a MDE
-        LocalDateTime baseDate = LocalDateTime.now().plusDays(30).with(LocalTime.of(8, 0));
+                log.info("Seeding flights automatically from LocationMapper...");
 
-        Flight flight1 = Flight.builder()
-                .flightNumber("IB6621")
-                .airline("Iberia")
-                .origin("BOG")
-                .destination("MDE")
-                .departureTime(baseDate.with(LocalTime.of(8, 30)))
-                .arrivalTime(baseDate.with(LocalTime.of(10, 0)))
-                .duration("1h 30m")
-                .price(new BigDecimal("350000"))
-                .aircraftType("Airbus A320")
-                .availableSeats(45)
-                .cabinClass("Economy")
-                .active(true)
-                .build();
+                List<String> colombianCities = Arrays.asList(
+                                "BOGOTA", "MEDELLIN", "CALI", "CARTAGENA", "BARRANQUILLA",
+                                "BUCARAMANGA", "PEREIRA", "SANTA_MARTA", "MANIZALES", "VILLAVICENCIO");
 
-        Flight flight2 = Flight.builder()
-                .flightNumber("VY1234")
-                .airline("Vueling")
-                .origin("BOG")
-                .destination("MDE")
-                .departureTime(baseDate.with(LocalTime.of(10, 15)))
-                .arrivalTime(baseDate.with(LocalTime.of(11, 40)))
-                .duration("1h 25m")
-                .price(new BigDecimal("280000"))
-                .aircraftType("Airbus A320")
-                .availableSeats(32)
-                .cabinClass("Economy")
-                .active(true)
-                .build();
+                List<String> internationalCities = Arrays.asList(
+                                "MADRID", "PARIS", "LONDON", "MIAMI", "NEW_YORK", "MEXICO_CITY", "LIMA", "QUITO");
 
-        Flight flight3 = Flight.builder()
-                .flightNumber("UX5678")
-                .airline("Air Europa")
-                .origin("BOG")
-                .destination("MDE")
-                .departureTime(baseDate.with(LocalTime.of(12, 45)))
-                .arrivalTime(baseDate.with(LocalTime.of(14, 20)))
-                .duration("1h 35m")
-                .price(new BigDecimal("420000"))
-                .aircraftType("Airbus A320")
-                .availableSeats(28)
-                .cabinClass("Economy")
-                .active(true)
-                .build();
+                List<String> airlines = Arrays.asList(
+                                "Avianca", "LATAM", "Viva Air", "Wingo", "Copa Airlines", "Iberia", "Air France",
+                                "KLM");
 
-        // Vuelos de MDE a BOG
-        Flight flight4 = Flight.builder()
-                .flightNumber("IB6623")
-                .airline("Iberia")
-                .origin("MDE")
-                .destination("BOG")
-                .departureTime(baseDate.plusDays(5).with(LocalTime.of(9, 15)))
-                .arrivalTime(baseDate.plusDays(5).with(LocalTime.of(10, 45)))
-                .duration("1h 30m")
-                .price(new BigDecimal("360000"))
-                .aircraftType("Airbus A320")
-                .availableSeats(38)
-                .cabinClass("Economy")
-                .active(true)
-                .build();
+                List<String> aircraftTypes = Arrays.asList(
+                                "Airbus A320", "Boeing 737", "Airbus A330", "Boeing 787", "Embraer 190");
 
-        Flight flight5 = Flight.builder()
-                .flightNumber("VY2345")
-                .airline("Vueling")
-                .origin("MDE")
-                .destination("BOG")
-                .departureTime(baseDate.plusDays(5).with(LocalTime.of(11, 30)))
-                .arrivalTime(baseDate.plusDays(5).with(LocalTime.of(12, 55)))
-                .duration("1h 25m")
-                .price(new BigDecimal("290000"))
-                .aircraftType("Airbus A320")
-                .availableSeats(41)
-                .cabinClass("Economy")
-                .active(true)
-                .build();
+                List<Flight> flightsToSave = new ArrayList<>();
+                Random random = new Random();
+                int flightCounter = 1000;
 
-        flightRepository.save(flight1);
-        flightRepository.save(flight2);
-        flightRepository.save(flight3);
-        flightRepository.save(flight4);
-        flightRepository.save(flight5);
+                for (int day = 1; day <= 60; day++) {
+                        LocalDateTime baseDate = LocalDateTime.now().plusDays(day);
 
-        log.info("Flights seeded successfully: {} flights created", flightRepository.count());
-    }
+                        generateDomesticFlights(colombianCities, airlines, aircraftTypes, flightsToSave,
+                                        random, flightCounter, baseDate);
+
+                        if (day % 7 == 0) {
+                                generateInternationalFlights(colombianCities, internationalCities, airlines,
+                                                aircraftTypes, flightsToSave, random, flightCounter, baseDate);
+                        }
+
+                        flightCounter += 50;
+                }
+
+                flightRepository.saveAll(flightsToSave);
+                log.info("Flights seeded successfully: {} flights created", flightsToSave.size());
+        }
+
+        private void generateDomesticFlights(List<String> cities, List<String> airlines,
+                        List<String> aircraftTypes, List<Flight> flights,
+                        Random random, int flightCounter, LocalDateTime baseDate) {
+
+                for (String origin : cities) {
+                        for (String destination : cities) {
+                                if (!origin.equals(destination)) {
+                                        int flightsPerRoute = 2 + random.nextInt(3);
+
+                                        for (int i = 0; i < flightsPerRoute; i++) {
+                                                LocalTime departureTime = LocalTime.of(6 + random.nextInt(16),
+                                                                random.nextInt(60));
+
+                                                Flight flight = createFlight(
+                                                                generateFlightNumber(
+                                                                                airlines.get(random.nextInt(
+                                                                                                airlines.size())),
+                                                                                flightCounter++),
+                                                                airlines.get(random.nextInt(airlines.size())),
+                                                                origin,
+                                                                destination,
+                                                                baseDate.with(departureTime),
+                                                                generateDomesticDuration(random),
+                                                                generateDomesticPrice(origin, destination, random),
+                                                                aircraftTypes.get(random.nextInt(aircraftTypes.size())),
+                                                                50 + random.nextInt(150),
+                                                                "Economy");
+
+                                                flights.add(flight);
+                                        }
+                                }
+                        }
+                }
+        }
+
+        private void generateInternationalFlights(List<String> colombianCities, List<String> internationalCities,
+                        List<String> airlines, List<String> aircraftTypes,
+                        List<Flight> flights, Random random, int flightCounter,
+                        LocalDateTime baseDate) {
+
+                List<String> hubCities = Arrays.asList("BOGOTA", "MEDELLIN", "CARTAGENA");
+
+                for (String colombianCity : hubCities) {
+                        for (String internationalCity : internationalCities) {
+                                if (random.nextDouble() < 0.7) {
+                                        LocalTime departureTime = LocalTime.of(random.nextInt(24), random.nextInt(60));
+
+                                        Flight outbound = createFlight(
+                                                        generateFlightNumber(
+                                                                        airlines.get(random.nextInt(airlines.size())),
+                                                                        flightCounter++),
+                                                        airlines.get(random.nextInt(airlines.size())),
+                                                        colombianCity,
+                                                        internationalCity,
+                                                        baseDate.with(departureTime),
+                                                        generateInternationalDuration(random),
+                                                        generateInternationalPrice(internationalCity, random),
+                                                        aircraftTypes.get(random.nextInt(aircraftTypes.size())),
+                                                        150 + random.nextInt(200),
+                                                        "Economy");
+
+                                        Flight returnFlight = createFlight(
+                                                        generateFlightNumber(
+                                                                        airlines.get(random.nextInt(airlines.size())),
+                                                                        flightCounter++),
+                                                        outbound.getAirline(),
+                                                        internationalCity,
+                                                        colombianCity,
+                                                        baseDate.plusDays(1).with(departureTime.plusHours(2)),
+                                                        outbound.getDuration(),
+                                                        outbound.getPrice().add(new BigDecimal(random.nextInt(100000))),
+                                                        outbound.getAircraftType(),
+                                                        150 + random.nextInt(200),
+                                                        "Economy");
+
+                                        flights.add(outbound);
+                                        flights.add(returnFlight);
+                                }
+                        }
+                }
+        }
+
+        private Flight createFlight(String flightNumber, String airline, String origin, String destination,
+                        LocalDateTime departureTime, String duration, BigDecimal price,
+                        String aircraftType, int availableSeats, String cabinClass) {
+
+                LocalDateTime arrivalTime = departureTime.plusMinutes(parseDuration(duration));
+
+                return Flight.builder()
+                                .flightNumber(flightNumber)
+                                .airline(airline)
+                                .origin(origin)
+                                .destination(destination)
+                                .departureTime(departureTime)
+                                .arrivalTime(arrivalTime)
+                                .duration(duration)
+                                .price(price)
+                                .aircraftType(aircraftType)
+                                .availableSeats(availableSeats)
+                                .cabinClass(cabinClass)
+                                .active(true)
+                                .build();
+        }
+
+        private String generateFlightNumber(String airline, int counter) {
+                String prefix = switch (airline) {
+                        case "Avianca" -> "AV";
+                        case "LATAM" -> "LA";
+                        case "Viva Air" -> "VV";
+                        case "Wingo" -> "P5";
+                        case "Copa Airlines" -> "CM";
+                        case "Iberia" -> "IB";
+                        case "Air France" -> "AF";
+                        case "KLM" -> "KL";
+                        default -> "XX";
+                };
+                return prefix + (1000 + (counter % 8999));
+        }
+
+        private String generateDomesticDuration(Random random) {
+                int hours = 1 + random.nextInt(3);
+                int minutes = random.nextInt(60);
+                return hours + "h " + minutes + "m";
+        }
+
+        private String generateInternationalDuration(Random random) {
+                int hours = 8 + random.nextInt(8);
+                int minutes = random.nextInt(60);
+                return hours + "h " + minutes + "m";
+        }
+
+        private BigDecimal generateDomesticPrice(String origin, String destination, Random random) {
+                BigDecimal basePrice = new BigDecimal("200000");
+                BigDecimal variation = new BigDecimal(random.nextInt(300000));
+                return basePrice.add(variation);
+        }
+
+        private BigDecimal generateInternationalPrice(String destination, Random random) {
+                BigDecimal basePrice = new BigDecimal("1500000");
+                BigDecimal variation = new BigDecimal(random.nextInt(2000000));
+                return basePrice.add(variation);
+        }
+
+        private long parseDuration(String duration) {
+                String[] parts = duration.split(" ");
+                long hours = Long.parseLong(parts[0].replace("h", ""));
+                long minutes = Long.parseLong(parts[1].replace("m", ""));
+                return hours * 60 + minutes;
+        }
 }
