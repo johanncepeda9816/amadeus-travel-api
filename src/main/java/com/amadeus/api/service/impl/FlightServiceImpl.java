@@ -1,21 +1,29 @@
 package com.amadeus.api.service.impl;
 
+import com.amadeus.api.dto.request.CreateFlightRequest;
 import com.amadeus.api.dto.request.FlightSearchRequest;
+import com.amadeus.api.dto.request.UpdateFlightRequest;
+import com.amadeus.api.dto.response.FlightAdminDto;
 import com.amadeus.api.dto.response.FlightDto;
 import com.amadeus.api.dto.response.FlightSearchResponse;
 import com.amadeus.api.dto.response.SearchMetadata;
 import com.amadeus.api.entity.Flight;
+import com.amadeus.api.exception.FlightNotFoundException;
 import com.amadeus.api.repository.FlightRepository;
 import com.amadeus.api.service.FlightService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -187,6 +195,120 @@ public class FlightServiceImpl implements FlightService {
 				.aircraftType("Airbus A320")
 				.availableSeats((int) (Math.random() * 50) + 10)
 				.cabinClass("Economy")
+				.build();
+	}
+
+	@Override
+	@Transactional
+	public FlightAdminDto createFlight(CreateFlightRequest request) {
+		validateFlightUniqueness(request.getFlightNumber(), request.getDepartureTime());
+
+		Flight flight = Flight.builder()
+				.flightNumber(request.getFlightNumber())
+				.airline(request.getAirline())
+				.origin(request.getOrigin().toUpperCase())
+				.destination(request.getDestination().toUpperCase())
+				.departureTime(request.getDepartureTime())
+				.arrivalTime(request.getArrivalTime())
+				.duration(request.getDuration())
+				.price(request.getPrice())
+				.aircraftType(request.getAircraftType())
+				.availableSeats(request.getAvailableSeats())
+				.cabinClass(request.getCabinClass())
+				.active(request.getActive())
+				.build();
+
+		Flight savedFlight = flightRepository.save(flight);
+		log.info("Created new flight: {}", savedFlight.getFlightNumber());
+
+		return convertToFlightAdminDto(savedFlight);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public FlightAdminDto getFlightById(Long id) {
+		Flight flight = findFlightById(id);
+		return convertToFlightAdminDto(flight);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<FlightAdminDto> getAllFlights(Pageable pageable) {
+		return flightRepository.findAll(pageable)
+				.map(this::convertToFlightAdminDto);
+	}
+
+	@Override
+	@Transactional
+	public FlightAdminDto updateFlight(Long id, UpdateFlightRequest request) {
+		Flight existingFlight = findFlightById(id);
+
+		if (request.getFlightNumber() != null &&
+				!request.getFlightNumber().equals(existingFlight.getFlightNumber())) {
+			validateFlightUniqueness(request.getFlightNumber(),
+					request.getDepartureTime() != null ? request.getDepartureTime()
+							: existingFlight.getDepartureTime());
+		}
+
+		updateFlightFields(existingFlight, request);
+		Flight updatedFlight = flightRepository.save(existingFlight);
+
+		log.info("Updated flight: {}", updatedFlight.getFlightNumber());
+		return convertToFlightAdminDto(updatedFlight);
+	}
+
+	@Override
+	@Transactional
+	public void deleteFlight(Long id) {
+		Flight flight = findFlightById(id);
+		flightRepository.delete(flight);
+		log.info("Deleted flight: {}", flight.getFlightNumber());
+	}
+
+	private Flight findFlightById(Long id) {
+		return flightRepository.findById(id)
+				.orElseThrow(() -> new FlightNotFoundException(id));
+	}
+
+	private void validateFlightUniqueness(String flightNumber, LocalDateTime departureTime) {
+		if (flightRepository.existsByFlightNumberAndDepartureTime(flightNumber, departureTime)) {
+			throw new IllegalArgumentException("Flight with number " + flightNumber +
+					" already exists for departure time " + departureTime);
+		}
+	}
+
+	private void updateFlightFields(Flight flight, UpdateFlightRequest request) {
+		Optional.ofNullable(request.getFlightNumber()).ifPresent(flight::setFlightNumber);
+		Optional.ofNullable(request.getAirline()).ifPresent(flight::setAirline);
+		Optional.ofNullable(request.getOrigin()).ifPresent(value -> flight.setOrigin(value.toUpperCase()));
+		Optional.ofNullable(request.getDestination()).ifPresent(value -> flight.setDestination(value.toUpperCase()));
+		Optional.ofNullable(request.getDepartureTime()).ifPresent(flight::setDepartureTime);
+		Optional.ofNullable(request.getArrivalTime()).ifPresent(flight::setArrivalTime);
+		Optional.ofNullable(request.getDuration()).ifPresent(flight::setDuration);
+		Optional.ofNullable(request.getPrice()).ifPresent(flight::setPrice);
+		Optional.ofNullable(request.getAircraftType()).ifPresent(flight::setAircraftType);
+		Optional.ofNullable(request.getAvailableSeats()).ifPresent(flight::setAvailableSeats);
+		Optional.ofNullable(request.getCabinClass()).ifPresent(flight::setCabinClass);
+		Optional.ofNullable(request.getActive()).ifPresent(flight::setActive);
+	}
+
+	private FlightAdminDto convertToFlightAdminDto(Flight flight) {
+		return FlightAdminDto.builder()
+				.id(flight.getId())
+				.flightNumber(flight.getFlightNumber())
+				.airline(flight.getAirline())
+				.origin(flight.getOrigin())
+				.destination(flight.getDestination())
+				.departureTime(flight.getDepartureTime())
+				.arrivalTime(flight.getArrivalTime())
+				.duration(flight.getDuration())
+				.price(flight.getPrice())
+				.aircraftType(flight.getAircraftType())
+				.availableSeats(flight.getAvailableSeats())
+				.cabinClass(flight.getCabinClass())
+				.active(flight.isActive())
+				.createdAt(flight.getCreatedAt())
+				.updatedAt(flight.getUpdatedAt())
 				.build();
 	}
 }
