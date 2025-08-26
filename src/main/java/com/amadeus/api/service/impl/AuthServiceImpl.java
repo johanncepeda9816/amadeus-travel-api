@@ -3,6 +3,7 @@ package com.amadeus.api.service.impl;
 import com.amadeus.api.dto.LoginRequest;
 import com.amadeus.api.dto.LoginResponse;
 import com.amadeus.api.entity.User;
+import com.amadeus.api.exception.AuthenticationException;
 import com.amadeus.api.repository.UserRepository;
 import com.amadeus.api.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +23,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByEmailAndEnabledTrue(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new AuthenticationException("Invalid credentials");
         }
 
         user.setLastLogin(LocalDateTime.now());
@@ -52,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String token) {
         if (!jwtTokenProvider.validateToken(token)) {
-            throw new RuntimeException("Invalid token");
+            throw new AuthenticationException("Invalid token");
         }
     }
 }
