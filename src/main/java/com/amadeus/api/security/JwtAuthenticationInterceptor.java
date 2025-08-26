@@ -1,5 +1,6 @@
 package com.amadeus.api.security;
 
+import com.amadeus.api.config.SecurityProperties;
 import com.amadeus.api.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

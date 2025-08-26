@@ -34,7 +34,12 @@ public class GlobalExceptionHandler {
         
         log.error("Validation error: {}", errors);
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error("VALIDATION_ERROR", "Validation failed", errors));
+                .body(ApiResponse.<Map<String, String>>builder()
+                        .success(false)
+                        .error("VALIDATION_ERROR")
+                        .message("Validation failed")
+                        .data(errors)
+                        .build());
     }
 
     @ExceptionHandler(Exception.class)

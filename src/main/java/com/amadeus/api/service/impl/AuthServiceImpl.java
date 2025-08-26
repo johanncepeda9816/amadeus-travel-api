@@ -6,6 +6,7 @@ import com.amadeus.api.entity.User;
 import com.amadeus.api.exception.AuthenticationException;
 import com.amadeus.api.repository.UserRepository;
 import com.amadeus.api.security.JwtTokenProvider;
+import com.amadeus.api.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

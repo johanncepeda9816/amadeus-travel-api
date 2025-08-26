@@ -48,6 +48,7 @@ public class User implements UserDetails {
     private LocalDateTime lastLogin;
     
     @Column(nullable = false)
+    @Builder.Default
     private boolean enabled = true;
     
     @PrePersist
