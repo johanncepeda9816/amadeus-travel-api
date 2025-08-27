@@ -14,16 +14,33 @@ A comprehensive REST API for flight search and management built with Spring Boot
 
 ## 🛠 Technology Stack
 
+### Core Framework
+
 - **Java 17**
 - **Spring Boot 3.5.5**
 - **Spring Security 6**
 - **Spring Data JPA**
 - **JWT (JSON Web Tokens)**
-- **H2 Database** (Development)
+
+### Database
+
+- **H2 Database** (Development & Testing)
 - **PostgreSQL** (Production)
+
+### Build & Documentation
+
 - **Maven** (Dependency Management)
 - **Lombok** (Code Generation)
 - **Swagger/OpenAPI 3** (API Documentation)
+
+### Testing Framework
+
+- **JUnit 5** (Unit Testing Framework)
+- **Mockito** (Mocking Framework)
+- **Spring Boot Test** (Integration Testing)
+- **Spring Security Test** (Security Testing)
+- **AssertJ** (Fluent Assertions)
+- **H2 Database** (In-memory testing database)
 
 ## 📋 Prerequisites
 
@@ -221,11 +238,99 @@ The application automatically seeds the database with:
 
 ## 🧪 Testing
 
+This application features a comprehensive suite of **156 unit tests** that ensure code quality and reliability.
+
 ### Run Tests
 
 ```bash
+# Run all tests
 ./mvnw test
+
+# Run tests with specific profile
+./mvnw test -Dspring.profiles.active=test
+
+# Run specific test class
+./mvnw test -Dtest=FlightControllerTest
+
+# Run tests with coverage report
+./mvnw test jacoco:report
 ```
+
+### Complete Test Suite
+
+The application includes tests for all architecture layers:
+
+#### 🎯 Controllers Tests (32 tests)
+
+- **FlightControllerTest**: Tests for all flight endpoints
+- **AuthControllerTest**: Tests for authentication and authorization
+
+#### 🏗️ Service Layer Tests (47 tests)
+
+- **FlightServiceImplTest**: Tests for flight business logic
+- **AuthServiceImplTest**: Tests for authentication services
+
+#### 🗄️ Repository Tests (25 tests)
+
+- **FlightRepositoryTest**: Tests for custom queries and JPA operations
+
+#### 🛠️ Utility Tests (35 tests)
+
+- **JwtUtilTest**: Tests for JWT token extraction
+- **LocationMapperTest**: Tests for location code mapping
+- **JwtTokenProviderTest**: Tests for token generation and validation
+
+#### 🏷️ Entity Tests (8 tests)
+
+- **FlightEntityTest**: Tests for lifecycle methods (@PrePersist, @PreUpdate)
+
+#### ✅ Validation Tests (8 tests)
+
+- **FlightSearchRequestValidationTest**: Tests for DTO validations
+
+#### 🚀 Integration Tests (1 test)
+
+- **ApplicationIntegrationTest**: Test to verify application context
+
+### Test Configuration
+
+Tests use:
+
+- **Database**: H2 in-memory for testing
+- **Profile**: `test` with specific configuration
+- **Frameworks**: JUnit 5, Mockito, Spring Boot Test
+- **Tools**: TestEntityManager, MockMvc, @DataJpaTest
+
+### Test Configuration File
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+
+jwt:
+  secret: myTestSecretKeyForJWTTokenGenerationMustBeLongEnoughForHS256Algorithm
+  expiration: 86400000
+```
+
+### Test Coverage
+
+Tests cover:
+
+- ✅ **Controllers**: All endpoints (GET, POST, PUT, DELETE)
+- ✅ **Services**: All business logic and edge cases
+- ✅ **Repositories**: Custom queries and JPA operations
+- ✅ **Security**: JWT token generation and validation
+- ✅ **Validation**: Field validations and constraints
+- ✅ **Entities**: Lifecycle methods and JPA behavior
+- ✅ **Utilities**: Helper functions and mappers
 
 ### Manual Testing
 
