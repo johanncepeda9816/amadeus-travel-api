@@ -16,9 +16,15 @@ public class SecurityProperties {
                         "/auth/register",
                         "/flights/search",
                         "/flights/locations/**",
+                        "/flights/upcoming",
+                        // H2
                         "/h2-console/**",
                         "/actuator/**",
-                        "/flights/upcoming");
+                        // DOCS
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/api-docs/**");
 
         private List<String> adminEndpoints = List.of(
                         "/admin/**",

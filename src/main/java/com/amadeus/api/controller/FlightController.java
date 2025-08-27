@@ -9,6 +9,14 @@ import com.amadeus.api.dto.response.FlightDto;
 import com.amadeus.api.dto.response.FlightSearchResponse;
 import com.amadeus.api.dto.response.LocationDto;
 import com.amadeus.api.service.FlightService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +35,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/flights")
 @RequiredArgsConstructor
+@Tag(name = "Flights", description = "API for flight management and search")
 public class FlightController {
 
     private final FlightService flightService;
 
+    @Operation(summary = "Search flights", description = "Search available flights based on specified criteria", tags = "Flights")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Search completed successfully", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid search parameters", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
     @PostMapping("/search")
     public ResponseEntity<ApiResponse<FlightSearchResponse>> searchFlights(
-            @Valid @RequestBody FlightSearchRequest request) {
+            @Parameter(description = "Flight search criteria", required = true) @Valid @RequestBody FlightSearchRequest request) {
 
         log.info("Flight search request received: {} to {} on {}",
                 request.getOrigin(), request.getDestination(), request.getDepartureDate());
@@ -48,10 +62,17 @@ public class FlightController {
         }
     }
 
+    @Operation(summary = "Create flight (Admin)", description = "Creates a new flight. Requires administrator permissions.", security = @SecurityRequirement(name = "Bearer Authentication"), tags = "Flights - Admin")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Flight created successfully", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid flight data"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN role")
+    })
     @PostMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<FlightAdminDto>> createFlight(
-            @Valid @RequestBody CreateFlightRequest request) {
+            @Parameter(description = "Flight data to create", required = true) @Valid @RequestBody CreateFlightRequest request) {
 
         log.info("Creating new flight: {}", request.getFlightNumber());
         FlightAdminDto flight = flightService.createFlight(request);
@@ -116,6 +137,10 @@ public class FlightController {
         return ResponseEntity.ok(ApiResponse.success(destinations, "Available destinations retrieved successfully"));
     }
 
+    @Operation(summary = "Get all available locations", description = "Returns all available locations as origin and destination", tags = "Flights")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Location list retrieved successfully", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
     @GetMapping("/locations")
     public ResponseEntity<ApiResponse<List<LocationDto>>> getAvailableLocations() {
 
