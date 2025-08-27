@@ -20,6 +20,9 @@ public class OpenApiConfig {
     @Value("${server.port:8080}")
     private String serverPort;
 
+    @Value("${server.servlet.context-path:/api}")
+    private String contextPath;
+
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
@@ -35,10 +38,10 @@ public class OpenApiConfig {
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:" + serverPort)
+                                .url("http://localhost:" + serverPort + contextPath)
                                 .description("Development server"),
                         new Server()
-                                .url("https://api.amadeus-travel.com")
+                                .url("https://api.amadeus-travel.com" + contextPath)
                                 .description("Production server")))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
                 .components(new Components()

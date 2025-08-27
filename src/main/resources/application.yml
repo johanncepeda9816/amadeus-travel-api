@@ -30,6 +30,12 @@ server:
   servlet:
     context-path: /api
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 management:
   endpoints:
     web:
@@ -67,6 +73,11 @@ security:
     - /flights/search
     - /flights/locations/**
     - /flights/upcoming
+    # DOCS
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /v3/api-docs/**
+    - /api-docs/**
   admin-endpoints:
     - /admin/**
     - /users/**
