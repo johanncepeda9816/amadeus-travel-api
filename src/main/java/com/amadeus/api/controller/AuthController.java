@@ -71,15 +71,18 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserDto>> getCurrentUser(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<UserDto>> getCurrentUser() {
         try {
-            String userEmail = (String) request.getAttribute("userEmail");
 
-            if (userEmail == null || userEmail.trim().isEmpty()) {
+            org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder
+                    .getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
                 return ResponseEntity.status(401)
                         .body(ApiResponse.error("AUTH_ERROR", "Invalid token or user information not available"));
             }
 
+            String userEmail = authentication.getName();
             UserDto currentUser = authService.getCurrentUser(userEmail);
             return ResponseEntity.ok(ApiResponse.success(currentUser, "User information retrieved successfully"));
 

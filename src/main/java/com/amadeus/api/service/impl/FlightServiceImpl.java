@@ -269,4 +269,19 @@ public class FlightServiceImpl implements FlightService {
 		List<Flight> flights = flightRepository.findUpcomingFlights(LocalDateTime.now(), PageRequest.of(0, limit));
 		return flights.stream().map(this::convertToFlightDto).collect(Collectors.toList());
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<FlightAdminDto> searchFlightsForAdmin(String searchTerm, Pageable pageable) {
+		log.info("Searching flights for admin with term: {}", searchTerm);
+
+		if (searchTerm == null || searchTerm.trim().isEmpty()) {
+			return flightRepository.findAll(pageable).map(this::convertToFlightAdminDto);
+		}
+
+		Page<Flight> flights = flightRepository.searchFlightsByMultipleFields(searchTerm.trim(), pageable);
+		log.info("Found {} flights matching search term: {}", flights.getTotalElements(), searchTerm);
+
+		return flights.map(this::convertToFlightAdminDto);
+	}
 }

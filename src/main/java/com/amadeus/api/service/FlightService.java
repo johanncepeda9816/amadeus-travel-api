@@ -33,4 +33,6 @@ public interface FlightService {
     List<LocationDto> getAvailableLocations();
 
     List<FlightDto> getUpcomingFlights(int limit);
+
+    Page<FlightAdminDto> searchFlightsForAdmin(String searchTerm, Pageable pageable);
 }

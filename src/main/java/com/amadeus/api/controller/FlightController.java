@@ -103,6 +103,42 @@ public class FlightController {
         return ResponseEntity.ok(ApiResponse.success(flights, "Flights retrieved successfully"));
     }
 
+    @Operation(summary = "Search flights (Admin)", description = "Advanced search for flights across all fields. Searches in flight number, airline, origin, destination, aircraft type, and cabin class. Requires administrator permissions.", security = @SecurityRequirement(name = "Bearer Authentication"), tags = "Flights - Admin")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Search completed successfully", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid search parameters"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN role")
+    })
+    @GetMapping("/search/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<FlightAdminDto>>> searchFlights(
+            @Parameter(description = "Search term to find flights across multiple fields (flight number, airline, origin, destination, aircraft type, cabin class)", required = false) @RequestParam(required = false) String searchTerm,
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of results per page") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Field to sort by") @RequestParam(defaultValue = "departureTime") String sortBy,
+            @Parameter(description = "Sort direction (asc or desc)") @RequestParam(defaultValue = "desc") String sortDir) {
+
+        log.info("Admin flight search request - term: '{}', page: {}, size: {}", searchTerm, page, size);
+
+        try {
+            Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+
+            Page<FlightAdminDto> flights = flightService.searchFlightsForAdmin(searchTerm, pageable);
+
+            String message = searchTerm != null && !searchTerm.trim().isEmpty()
+                    ? String.format("Found %d flights matching '%s'", flights.getTotalElements(), searchTerm)
+                    : String.format("Retrieved %d flights", flights.getTotalElements());
+
+            return ResponseEntity.ok(ApiResponse.success(flights, message));
+        } catch (Exception e) {
+            log.error("Error during admin flight search: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("ADMIN_SEARCH_ERROR", "Error occurred during flight search"));
+        }
+    }
+
     @PutMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<FlightAdminDto>> updateFlight(

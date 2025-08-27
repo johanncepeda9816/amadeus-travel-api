@@ -1,6 +1,7 @@
 package com.amadeus.api.repository;
 
 import com.amadeus.api.entity.Flight;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -53,4 +54,14 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
         @Query("SELECT f FROM Flight f WHERE f.departureTime >= :startDate AND f.active = true ORDER BY f.departureTime")
         List<Flight> findUpcomingFlights(@Param("startDate") LocalDateTime startDate, Pageable pageable);
+
+        @Query("SELECT f FROM Flight f WHERE " +
+                        "(LOWER(f.flightNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                        "LOWER(f.airline) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                        "LOWER(f.origin) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                        "LOWER(f.destination) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                        "LOWER(f.aircraftType) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                        "LOWER(f.cabinClass) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+                        "ORDER BY f.departureTime DESC")
+        Page<Flight> searchFlightsByMultipleFields(@Param("searchTerm") String searchTerm, Pageable pageable);
 }
