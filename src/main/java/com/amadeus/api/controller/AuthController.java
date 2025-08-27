@@ -3,6 +3,8 @@ package com.amadeus.api.controller;
 import com.amadeus.api.dto.ApiResponse;
 import com.amadeus.api.dto.request.LoginRequest;
 import com.amadeus.api.dto.response.LoginResponse;
+import com.amadeus.api.dto.response.UserDto;
+import com.amadeus.api.exception.AuthenticationException;
 import com.amadeus.api.service.AuthService;
 import com.amadeus.api.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,15 +64,32 @@ public class AuthController {
         }
     }
 
-    @Operation(summary = "Get current user", description = "Returns information about the authenticated user", security = @SecurityRequirement(name = "Bearer Authentication"), tags = "Authentication")
+    @Operation(summary = "Get current user", description = "Returns complete information about the authenticated user including profile details, roles, and session information", security = @SecurityRequirement(name = "Bearer Authentication"), tags = "Authentication")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User retrieved successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid token")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Información del usuario obtenida exitosamente", content = @Content(schema = @Schema(implementation = UserDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Token inválido, expirado o sesión inactiva"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<String>> getCurrentUser(HttpServletRequest request) {
-        String userEmail = (String) request.getAttribute("userEmail");
-        return ResponseEntity.ok(ApiResponse.success(userEmail, "Current user retrieved"));
+    public ResponseEntity<ApiResponse<UserDto>> getCurrentUser(HttpServletRequest request) {
+        try {
+            String userEmail = (String) request.getAttribute("userEmail");
+
+            if (userEmail == null || userEmail.trim().isEmpty()) {
+                return ResponseEntity.status(401)
+                        .body(ApiResponse.error("AUTH_ERROR", "Token inválido o información de usuario no disponible"));
+            }
+
+            UserDto currentUser = authService.getCurrentUser(userEmail);
+            return ResponseEntity.ok(ApiResponse.success(currentUser, "Información del usuario obtenida exitosamente"));
+
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.error("AUTH_ERROR", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("INTERNAL_ERROR", "Error interno del servidor"));
+        }
     }
 
 }

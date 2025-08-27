@@ -2,6 +2,7 @@ package com.amadeus.api.service.impl;
 
 import com.amadeus.api.dto.request.LoginRequest;
 import com.amadeus.api.dto.response.LoginResponse;
+import com.amadeus.api.dto.response.UserDto;
 import com.amadeus.api.entity.User;
 import com.amadeus.api.exception.AuthenticationException;
 import com.amadeus.api.repository.UserRepository;
@@ -37,8 +38,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getId().toString(),
                 user.getRole().name(),
-                user.getName()
-        );
+                user.getName());
 
         return LoginResponse.builder()
                 .token(token)
@@ -56,5 +56,22 @@ public class AuthServiceImpl implements AuthService {
         if (!jwtTokenProvider.validateToken(token)) {
             throw new AuthenticationException("Invalid token");
         }
+    }
+
+    @Override
+    public UserDto getCurrentUser(String email) {
+        User user = userRepository.findByEmailAndEnabledTrue(email)
+                .orElseThrow(() -> new AuthenticationException("Sesión inválida o usuario inactivo"));
+
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .role(user.getRole().name())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .lastLogin(user.getLastLogin())
+                .enabled(user.isEnabled())
+                .build();
     }
 }
