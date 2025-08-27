@@ -66,9 +66,9 @@ public class AuthController {
 
     @Operation(summary = "Get current user", description = "Returns complete information about the authenticated user including profile details, roles, and session information", security = @SecurityRequirement(name = "Bearer Authentication"), tags = "Authentication")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Información del usuario obtenida exitosamente", content = @Content(schema = @Schema(implementation = UserDto.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Token inválido, expirado o sesión inactiva"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User information retrieved successfully", content = @Content(schema = @Schema(implementation = UserDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid, expired token or inactive session"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserDto>> getCurrentUser(HttpServletRequest request) {
@@ -77,18 +77,18 @@ public class AuthController {
 
             if (userEmail == null || userEmail.trim().isEmpty()) {
                 return ResponseEntity.status(401)
-                        .body(ApiResponse.error("AUTH_ERROR", "Token inválido o información de usuario no disponible"));
+                        .body(ApiResponse.error("AUTH_ERROR", "Invalid token or user information not available"));
             }
 
             UserDto currentUser = authService.getCurrentUser(userEmail);
-            return ResponseEntity.ok(ApiResponse.success(currentUser, "Información del usuario obtenida exitosamente"));
+            return ResponseEntity.ok(ApiResponse.success(currentUser, "User information retrieved successfully"));
 
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401)
                     .body(ApiResponse.error("AUTH_ERROR", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("INTERNAL_ERROR", "Error interno del servidor"));
+                    .body(ApiResponse.error("INTERNAL_ERROR", "Internal server error"));
         }
     }
 
