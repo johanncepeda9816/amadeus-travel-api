@@ -17,12 +17,14 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
 # Production stage
-FROM openjdk:17-jre-slim
+FROM amazoncorretto:17-alpine-jdk
 
 WORKDIR /app
 
-# Create non-root user
-RUN groupadd -r spring && useradd -r -g spring spring
+# Install curl for healthcheck and create non-root user
+RUN apk add --no-cache curl && \
+    addgroup -S spring && \
+    adduser -S spring -G spring
 
 # Copy the JAR file
 COPY --from=builder /app/target/*.jar app.jar
@@ -34,7 +36,7 @@ USER spring
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/api/actuator/health || exit 1
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
