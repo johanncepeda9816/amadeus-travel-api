@@ -1,6 +1,7 @@
 package com.amadeus.api.repository;
 
 import com.amadeus.api.entity.Flight;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -49,4 +50,7 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
                         "SELECT DISTINCT f.destination FROM Flight f WHERE f.active = true " +
                         "ORDER BY 1")
         List<String> findDistinctLocations();
+
+        @Query("SELECT f FROM Flight f WHERE f.departureTime >= :startDate AND f.active = true ORDER BY f.departureTime")
+        List<Flight> findUpcomingFlights(@Param("startDate") LocalDateTime startDate, Pageable pageable);
 }

@@ -16,6 +16,7 @@ import com.amadeus.api.util.LocationMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -260,5 +261,12 @@ public class FlightServiceImpl implements FlightService {
 		return locations.stream()
 				.map(locationMapper::mapToLocationDto)
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<FlightDto> getUpcomingFlights(int limit) {
+		List<Flight> flights = flightRepository.findUpcomingFlights(LocalDateTime.now(), PageRequest.of(0, limit));
+		return flights.stream().map(this::convertToFlightDto).collect(Collectors.toList());
 	}
 }

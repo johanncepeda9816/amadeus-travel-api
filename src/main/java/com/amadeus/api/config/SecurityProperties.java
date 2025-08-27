@@ -17,7 +17,8 @@ public class SecurityProperties {
                         "/flights/search",
                         "/flights/locations/**",
                         "/h2-console/**",
-                        "/actuator/**");
+                        "/actuator/**",
+                        "/flights/upcoming");
 
         private List<String> adminEndpoints = List.of(
                         "/admin/**",

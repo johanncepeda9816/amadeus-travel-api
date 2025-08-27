@@ -4,6 +4,7 @@ import com.amadeus.api.dto.request.CreateFlightRequest;
 import com.amadeus.api.dto.request.FlightSearchRequest;
 import com.amadeus.api.dto.request.UpdateFlightRequest;
 import com.amadeus.api.dto.response.FlightAdminDto;
+import com.amadeus.api.dto.response.FlightDto;
 import com.amadeus.api.dto.response.FlightSearchResponse;
 import com.amadeus.api.dto.response.LocationDto;
 import org.springframework.data.domain.Page;
@@ -30,4 +31,6 @@ public interface FlightService {
     List<LocationDto> getAvailableDestinations();
 
     List<LocationDto> getAvailableLocations();
+
+    List<FlightDto> getUpcomingFlights(int limit);
 }

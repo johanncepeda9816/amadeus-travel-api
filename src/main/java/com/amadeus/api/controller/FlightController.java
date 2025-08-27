@@ -5,6 +5,7 @@ import com.amadeus.api.dto.request.CreateFlightRequest;
 import com.amadeus.api.dto.request.FlightSearchRequest;
 import com.amadeus.api.dto.request.UpdateFlightRequest;
 import com.amadeus.api.dto.response.FlightAdminDto;
+import com.amadeus.api.dto.response.FlightDto;
 import com.amadeus.api.dto.response.FlightSearchResponse;
 import com.amadeus.api.dto.response.LocationDto;
 import com.amadeus.api.service.FlightService;
@@ -120,5 +121,13 @@ public class FlightController {
 
         List<LocationDto> locations = flightService.getAvailableLocations();
         return ResponseEntity.ok(ApiResponse.success(locations, "Available locations retrieved successfully"));
+    }
+
+    @GetMapping("/upcoming")
+    public ResponseEntity<ApiResponse<List<FlightDto>>> getUpcomingFlights(
+            @RequestParam(defaultValue = "10") int limit) {
+
+        List<FlightDto> flights = flightService.getUpcomingFlights(limit);
+        return ResponseEntity.ok(ApiResponse.success(flights, "Upcoming flights retrieved successfully"));
     }
 }
